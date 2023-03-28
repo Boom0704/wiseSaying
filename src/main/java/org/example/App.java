@@ -1,12 +1,14 @@
 package org.example;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.io.*;
 
 public class App {
     private final Scanner sc;
-    private final ArrayList<Word> wordArrayList = new ArrayList<Word>();
+    ArrayList<Word> wordArrayList;
     public App(Scanner sc) {
         this.sc = sc;
+        this.wordArrayList= new ArrayList<Word>();
     }
 
     public void run() {
@@ -18,15 +20,30 @@ public class App {
 
             if (command.equals("종료")) {
                 break;
-            }else if (command.equals("등록")) {
+            }
+
+            else if (command.equals("등록")) {
                 regist();
                 command = "";
                 System.out.print("\n");
-            }else if (command.equals("목록")) {
+            }
+
+            else if (command.equals("초기화")) {
+                wordArrayList= new ArrayList<Word>();
+                Word.wordCount = 1;
+                Word.saveWordCount();
+                saveWordArrayList();
+                command = "";
+                System.out.print("\n");
+            }
+
+            else if (command.equals("목록")) {
                 listWish();
                 command = "";
                 System.out.print("\n");
-            }else if (command.contains("삭제")) {
+            }
+
+            else if (command.contains("삭제")) {
                 try{
                     String[] ArraysStr = command.split("\\?id=");
                     int num = Integer.parseInt(ArraysStr[1]);
@@ -39,7 +56,9 @@ public class App {
                     command = "";
                     System.out.print("\n");
                 }
-            }else if (command.contains("수정")) {
+            }
+
+            else if (command.contains("수정")) {
                 try{
                     String[] ArraysStr = command.split("\\?id=");
                     int num = Integer.parseInt(ArraysStr[1]);
@@ -76,7 +95,11 @@ public class App {
 
     public void deleteWish(int num) {
         try{
-            wordArrayList.remove(num-1);
+            for(int i=0; i < wordArrayList.size() ; i ++ ){
+                if(wordArrayList.get(i).num==num){
+                    wordArrayList.remove(i);
+                }
+            }
             System.out.println(num + "번 명언이 삭제되었습니다.");
         }
         catch (Exception e){
@@ -96,13 +119,41 @@ public class App {
             word.words = command1;
             word.writer = command2;
 
-            wordArrayList.set(num-1, word);
+            for(int i=0; i < wordArrayList.size() ; i ++ ){
+                if(wordArrayList.get(i).num==num){
+                    wordArrayList.set(i, word);
+                }
+            }
 
             System.out.println(word.num +"번 명언이 수정되었습니다.");
 
         }
         catch (Exception e){
             System.out.println(num + "번 명언은 존재하지 않습니다.");
+        }
+    }
+
+    public void saveWordArrayList() {
+        try {
+            FileOutputStream fos = new FileOutputStream("wordArrayList.dat");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(wordArrayList);
+            oos.close();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadWordArrayList() {
+        try {
+            FileInputStream fis = new FileInputStream("wordArrayList.dat");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            wordArrayList = (ArrayList<Word>) ois.readObject();
+            ois.close();
+            fis.close();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 }
